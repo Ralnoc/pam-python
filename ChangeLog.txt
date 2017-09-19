@@ -1,0 +1,47 @@
+pam-python-1.0.6 Sat, 27 Aug 2016 21:35:36 +1000
+
+  New: Update Makefile.release 
+  New: OSX support.
+  Bug: Fix debian bug #833411.
+
+pam-python-1.0.5 Fri, 19 Feb 2016 19:29:38 +1000
+
+  New: Update Makefile.release 
+  Bug: Fix pam typeo in pam_accept.py.  Thanks to André Caron
+       for the bug report.
+
+pam-python-1.0.4 2014-05-04
+
+  New: Re-homed to sourceforge.
+  New: Move to the AGPL-3.0.
+
+pam-python-1.0.3 2014-05-04
+
+  Bug: Make work with older versions of Python, courtesy of Thomas Kula.
+  Bug: Call dlerror() where appropriate, courtesy of David MacKenzie.
+  New: Linux-PAM-html has moved url's
+
+pam-python-1.0.2 2012-04-05
+
+  Bug: Get rid of build crap in source distribution.
+  Bug: Fix doco grammar.
+
+pam-python-1.0.1 2010-12-13
+
+  Bug: Build test suit so libraries are loaded as needed.
+
+pam-python-1.0.0 2010-05-23
+
+  New: Documentation moved to Python 2.6 format, ie sphinx.
+  New: Added additional members for the new PAM items:
+       PAM_XDISPLAY, PAM_XAUTHTOK and PAM_AUTHTOK_TYPE.
+  New: Added the PamXAuthData class.
+  New: Added new PAM constants in PAM 1.1.1.
+
+pam-python-0.1.1 2009-08-05
+
+  New: Made to work with Python 2.5.
+
+pam-python-0.1.0 2007-12-05
+
+  New: Epoch.

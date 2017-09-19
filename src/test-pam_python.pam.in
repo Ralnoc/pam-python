@@ -1,0 +1,4 @@
+auth	required	$PWD/pam_python.so $PWD/test.py
+account	required	$PWD/pam_python.so $PWD/test.py arg1 arg2
+password required	$PWD/pam_python.so $PWD/test.py
+session	required	$PWD/pam_python.so $PWD/test.py

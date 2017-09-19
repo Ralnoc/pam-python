@@ -1,0 +1,179 @@
+#
+# Do a release.  Does the following:
+# 
+# 1.  Verifies the changelogs have been updated to a consistent version.
+#
+# 2.  Updates the verison numbers and copyright dates in all source files.
+#
+# 3.  Builds the source tarball.
+#
+# 4.  Builds the debian source and binary packages.
+#
+# 5.  If there is a .spec file, buids the rpm source and binary
+#     packages.
+#
+# 6.  Sends the released files (tarball, debian and rpm packages) to the
+#     release area.
+#
+# 7.  Sends the HTML file, and other files references by it, to the web
+#     site.
+#
+# Copyright (c) 2013,2014,2015,2016 Russell Stuart.
+# Licensed (at your choice) under GPLv2, or any later version,
+# or AGPL-3.0+, or any later version.
+#
+RELEASE_ME=$(shell sed -n '1s/ .*//p' ChangeLog.txt)
+RELEASE_PACKAGE_NAME=$(shell echo "$(RELEASE_ME)" | sed 's/-[^-]*$$//')
+RELEASE_VERSION=$(shell echo "$(RELEASE_ME)" | sed 's/.*-//')
+RELEASE_YEAR=$(shell date +%Y)
+RELEASE_MONTH=$(shell date +%b)
+RELEASE_DATE=$(shell date +%Y-%m-%d)
+RELEASE_DEBIAN_VERSION=$(shell sed -n 's/[^(]*(\([^)]*\)).*/\1/p;q' debian/changelog)
+
+RELEASE_DIR=release.tmp
+RELEASE_HTDOCS=$(RELEASE_DIR)/htdocs
+RELEASE_FILES=$(RELEASE_DIR)/$(RELEASE_PACKAGE_NAME)-$(RELEASE_DEBIAN_VERSION)
+
+.PHONY: release
+release:	$(RELEASE_DIR)/release.stamp
+$(RELEASE_DIR)/release.stamp: $(RELEASE_SOURCES)
+	@echo ME=$(RELEASE_ME) PACKAGE=$(RELEASE_PACKAGE_NAME) VERSION=$(RELEASE_VERSION) YEAR=$(RELEASE_YEAR) MONTH=$(RELEASE_MONTH) DATE=$(RELEASE_DATE) DEBIAN_VERSION=$(RELEASE_DEBIAN_VERSION)
+	#
+	# Ensure the Debian changelog matches this version.
+	#
+	debian_version="$(RELEASE_DEBIAN_VERSION)"; [ "$(RELEASE_PACKAGE_NAME)-$${debian_version%-*}" = "$(RELEASE_ME)" ] || \
+	  { echo 1>&2 "debian/changelog: changelog is out of date."; exit 1; }
+	$(MAKE) release-clean
+	#
+	# Check changes have reflected in mercurial.
+	#
+	! hg status | grep '^?' || { echo "hg add hasn't been done" 1>&2; exit 1; }
+	! hg status | grep '^!' || { echo "hg rm hasn't been done" 1>&2; exit 1; }
+	[ -z "$$(hg resolv --list | grep -v ^R)" ] || { echo "There are unresolved merge conflicts" 1>&2; exit 1; }
+
+	#
+	# Update all the version numbers and dates.
+	#
+	set -e; for f in $(wildcard *.1); do \
+	  sed -i "s/^\([.].\" Copyright (c) \)2[0-9]*/\1$(RELEASE_YEAR)/" "$${f}"; \
+	  sed -i "s/^\([.]TH [A-Z]* 1 \"\)[^\"]*\(\".*Version[ 	]\+\)[1-9][0-9]*[.][0-9]\+/\1$(RELEASE_MONTH) $(RELEASE_YEAR)\2$(RELEASE_VERSION)/" "$${f}"; \
+	done
+	set -e; for f in $$(find . -name "*.c" -o -name "*.h"); do \
+	  sed -i "/$(RELEASE_YEAR)/!s/\(Copyright (c) [-0-9, ]*2[0-9]*\)\(,\? *Russell Stuart\)/\1,$(RELEASE_YEAR)\2/" "$${f}"; \
+	  sed -i "s/^\(static.*_version..[ 	]*=[ 	]*\"\)[^\"]*/\1$(RELEASE_VERSION)/" "$${f}"; \
+	  sed -i "s/^\(static.*_date..[ 	]*=[ 	]*\"\)[^\"]*/\1$(RELEASE_DATE)/" "$${f}"; \
+	done
+	set -e; for f in $$(find . -name "*.py"); do \
+	  sed -i 's/^\(VERSION[ 	]*=[ 	]*"\)[^ "]*/\1$(RELEASE_VERSION)/' $${f}; \
+	  sed -i 's/^\(VERSION[ 	]*=[ 	]*"[^ ]* \+\)[^"]*/\1$(RELEASE_DATE)/' $${f}; \
+	done
+	set -e; for f in $$(find . -name "*.rst" -o -name "*.py" -o -name "Makefile*") README.txt; do \
+	  sed -i "/$(RELEASE_YEAR)/!s/\(Copyright (c) [-0-9, ]*2[0-9]*\)\(,\? *Russell Stuart\)/\1,$(RELEASE_YEAR)\2/" "$${f}"; \
+	done
+	set -e; for f in $$(find . -name "setup.py"); do \
+	  sed -i 's/^\([ 	]*version="\)[0-9]\+[.][0-9.]\+/\1$(RELEASE_VERSION)/' "$${f}"; \
+	done
+ifneq ($(wildcard $(RELEASE_PACKAGE_NAME).spec),)
+	sed -i "s/\(Version:[ 	]\+\)[0-9]\+[.][0-9.]\+/\1$(RELEASE_VERSION)/" "$(RELEASE_PACKAGE_NAME).spec"
+endif
+ifneq ($(wildcard configure.ac),)
+	sed -i "s/\(AC_INIT(\[\?$(RELEASE_PACKAGE_NAME)\]\?, *\[\?\)[0-9]\+[.][0-9.]\+/\1$(RELEASE_VERSION)/" configure.ac
+endif
+ifneq ($(wildcard doc/conf.py),)
+	sed -i "/$(RELEASE_YEAR)/!s/^\( *copyright *= *u'[-0-9, ]*2[0-9]*\)\(,\?[ ]*Russell Stuart\)/\1,$(RELEASE_YEAR)\2/" doc/conf.py
+	sed -i "s/^\( *\(version\|release\) *= *u\?'\)[0-9]\+[.][0-9.]\+'/\1$(RELEASE_VERSION)'/" doc/conf.py
+endif
+	sed -i "/$(RELEASE_YEAR)/!s/\(.* is copyright &copy; [-0-9, ]*2[0-9]*\)\(,\?[ ]*Russell Stuart\)/\1,$(RELEASE_YEAR)\2/" "$(RELEASE_PACKAGE_NAME).html"
+	sed -i "s/$(RELEASE_PACKAGE_NAME)-[1-9][0-9]*[.][0-9]\+/$(RELEASE_ME)/g" "$(RELEASE_PACKAGE_NAME).html"
+	sed -i "/$(RELEASE_YEAR)/!s/\(Copyright (c) [-0-9, ]*2[0-9]*\)\(,\? *Russell Stuart\)/\1,$(RELEASE_YEAR)\2/" README.txt
+	#
+	# Do any custom stuff.
+	#
+	$(MAKE) release-customise
+	#
+	# Build the release source tarball.
+	#
+	(set -exv; d="$${PWD##*/}" && sd=$$(echo "$$d" | sed 's/\./[.]/g') && cd .. &&  tar cfz "$(RELEASE_PACKAGE_NAME)_$(RELEASE_VERSION).orig.tar.gz" --exclude="$${d}/debian" --exclude="$${d}/.hg*" --exclude-vcs --transform "s;^$${sd}\(/\|\$$\);$(RELEASE_ME)\1;" "$${d}")
+	#
+	# Insert the debian packates into the release.
+	#
+	DEBIAN_KERNEL_USE_CCACHE="yes" debuild --preserve-env --preserve-envvar="PATH" -k0xE7843A8C -sa --lintian-opts --info --display-info --display-experimental
+	mkdir -p "$(RELEASE_FILES)"
+	rm ../$(RELEASE_PACKAGE_NAME)_$(RELEASE_DEBIAN_VERSION)_*.build
+	set -xve; mv $$(sed -n '1,/^Files:/d;/^$$/q;s:.* :../:p' ../$(RELEASE_PACKAGE_NAME)_$(RELEASE_DEBIAN_VERSION)_*.changes) ../$(RELEASE_PACKAGE_NAME)_$(RELEASE_DEBIAN_VERSION)_*.changes $(RELEASE_FILES)
+	mv "$(RELEASE_FILES)/$(RELEASE_PACKAGE_NAME)_$(RELEASE_VERSION).orig.tar.gz" "$(RELEASE_FILES)/$(RELEASE_ME).tar.gz"
+ifneq ($(wildcard $(RELEASE_PACKAGE_NAME).spec),)
+	#
+	# Build the RPM package.
+	#
+	mkdir -p "$(RELEASE_DIR)/rpm/BUILD"
+	mkdir -p "$(RELEASE_DIR)/rpm/RPMS"
+	mkdir -p "$(RELEASE_DIR)/rpm/SOURCES"
+	mkdir -p "$(RELEASE_DIR)/rpm/SPECS"
+	mkdir -p "$(RELEASE_DIR)/rpm/SRPMS"
+	echo >"$(RELEASE_DIR)/rpm/rpmmacros" "%_topdir $(PWD)/$(RELEASE_DIR)/rpm"
+	TAR_OPTIONS=--wildcards rpmbuild -ta --macros "/usr/lib/rpm/macros:/usr/lib/rpm/platform/$(shell dpkg-architecture -qDEB_HOST_GNU_CPU)-$(shell dpkg-architecture -qDEB_HOST_ARCH_OS)linux/macros:/usr/lib/rpm/platform/noarch-$(shell dpkg-architecture -qDEB_HOST_ARCH_OS)/macros:$(RELEASE_DIR)/rpm/rpmmacros" "$(RELEASE_FILES)/$(RELEASE_ME).tar.gz"
+	mv "$(RELEASE_DIR)/rpm/SRPMS/$(RELEASE_ME)-1ras.src.rpm" "$(RELEASE_FILES)"
+	mv "$(RELEASE_DIR)/rpm/RPMS"/*/"$(RELEASE_ME)-1ras".*."rpm" "$(RELEASE_FILES)"
+	cp ChangeLog.txt "$(RELEASE_FILES)/README.txt"
+endif
+	#
+	# Build the htdocs directory as it will appear on the host.
+	#
+	mkdir -p "$(RELEASE_HTDOCS)"
+	cp -a $(RELEASE_PACKAGE_NAME).html $(RELEASE_HTDOCS)
+	set -e; for f in $$(sed -n 's,<\(a href\|img src\)="https\?://[^"]*"[^>]*>,,;ta;:a;s/.*<\(a href\|img src\)="\([^#/"][^#"]*\)"[^>]*>/\2@@@/g;T;s/@@@\([^@]\|@[^@]\|@@[^@]\)*$$//;s/@@@/ /g;p' "$(RELEASE_PACKAGE_NAME).html"); do \
+	  f="$${f%/}"; \
+	  [ ."$${f%%/*}" = ."$${f}" ] || mkdir -p "$(RELEASE_HTDOCS)/$${f%/*}"; \
+	  case "$${f}" in \
+	    *.[12345678].html) man2html <"$${f%.html}" | sed >"$(RELEASE_HTDOCS)/$${f}" '1,2d;7,8d;/^<HR>/,/^Time: /d';; \
+	    *) cp -a "$${f}" "$(RELEASE_HTDOCS)/$${f}";; \
+	  esac; \
+	done
+	ln -s "$(RELEASE_PACKAGE_NAME).html" "$(RELEASE_HTDOCS)/index.html"
+	echo "Options +Indexes" >"$(RELEASE_HTDOCS)/.htaccess"
+	#
+	# Verify there is no rubbish lying wround.
+	#
+	! hg status | grep '^?' || { echo '.hgignore: is missing some files' 1>&2; exit 1; }
+	touch $@
+
+.PHONY: release-customise
+release-customise::
+
+.PHONY: upload
+upload:	upload-htdocs upload-files
+
+.PHONY: upload-htdocs
+upload-htdocs: $(RELEASE_DIR)/release.stamp
+	#
+	# Send the files that a symlink'ed first, otherwise it fails on the
+	# 1st send.
+	#
+	cd $(RELEASE_DIR); rsync -avPR $$(for f in $$(find htdocs -name index.html -type l); do ff=$$(readlink "$${f}"); echo $${f%/*}/$${ff}; done) rstuart,$(RELEASE_PACKAGE_NAME)@web.sourceforge.net:.
+	rsync -avP --delete $(RELEASE_HTDOCS)/. rstuart,$(RELEASE_PACKAGE_NAME)@web.sourceforge.net:htdocs/.
+
+.PHONY: upload-files
+upload-files: $(RELEASE_DIR)/release.stamp
+	rsync -avP --delete $(RELEASE_FILES) rstuart,$(RELEASE_PACKAGE_NAME)@frs.sourceforge.net:/home/frs/project/$(RELEASE_PACKAGE_NAME)/.
+
+.PHONY: release-clean
+release-clean: release-project-clean
+	-[ "$(RELEASE_CLEAN_DONE)" = "yes" -o ! -d debian ] || RELEASE_CLEAN_DONE=yes debian/rules clean
+	[ ! -d .pc ] || { quilt pop -a; rm -r .pc; }
+	[ ! -f Makefile-automake ] || $(MAKE) maintainer-clean
+	rm -rf $(RELEASE_DIR) "$(RELEASE_PACKAGE_NAME).1.html"
+	rm -rf $$(find . -name "*.orig" -o -name ".*.sw?")
+
+.PHONY: release-tag
+release-tag:	$(RELEASE_DIR)/release.stamp
+	! hg status | grep '^?' || { echo "hg add hasn't been done" 1>&2; exit 1; }
+	! hg status | grep '^!' || { echo "hg rm hasn't been done" 1>&2; exit 1; }
+	[ -z "$$(hg resolv --list)" ] || { echo "There are unresolved merge conflicts" 1>&2; exit 1; }
+	[ -z "$$(hg status)" ] || \
+	  hg commit -m "Release $(RELEASE_PACKAGE_NAME)-$(RELEASE_DEBIAN_VERSION) - see ChangeLog.txt"
+	hg tag "$(RELEASE_PACKAGE_NAME)-$(RELEASE_DEBIAN_VERSION)"
+
+
+.PHONY: release-project-clean
+release-project-clean::
