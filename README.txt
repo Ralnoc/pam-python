@@ -9,7 +9,7 @@ pam_python
   HTML documentation style.
 
   All documentation is readable online at the home page:
-    http://pam-pathon.sourceforge.net/
+    http://pam-python.sourceforge.net/
 
 
 Dependencies
