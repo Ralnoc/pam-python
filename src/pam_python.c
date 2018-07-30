@@ -2226,7 +2226,7 @@ static int load_user_module(
     goto error_exit;
   }
   dot = strrchr(user_module_name, '.');
-  if (dot != 0 || strcmp(dot, ".py") == 0)
+  if ((dot != 0) && (strcmp(dot, ".py") == 0))
     *dot = '\0';
   *user_module = PyModule_New(user_module_name);
   if (*user_module == 0)
