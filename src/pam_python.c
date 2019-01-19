@@ -317,7 +317,7 @@ static PyMethodDef SyslogFile_Methods[] =
 {
   {
     "write",
-    (PyCFunction)SyslogFile_write,
+    (PyCFunction)(void(*)(void))SyslogFile_write,
     METH_VARARGS|METH_KEYWORDS,
     0
   },
@@ -1349,16 +1349,16 @@ static PyObject* PamEnv_values(
 
 static PyMethodDef PamEnv_Methods[] =
 {
-  {"__contains__",  (PyCFunction)PamEnv_has_key,METH_VARARGS|METH_KEYWORDS, 0},
-  {"__getitem__",   (PyCFunction)PamEnv_getitem,METH_VARARGS|METH_KEYWORDS, 0},
-  {"get",	    (PyCFunction)PamEnv_get,	METH_VARARGS|METH_KEYWORDS, 0},
-  {"has_key",	    (PyCFunction)PamEnv_has_key,METH_VARARGS|METH_KEYWORDS, 0},
-  {"items",	    (PyCFunction)PamEnv_items,	METH_VARARGS|METH_KEYWORDS, 0},
-  {"iteritems",	    (PyCFunction)PamEnv_iteritems,METH_VARARGS|METH_KEYWORDS, 0},
-  {"iterkeys",	    (PyCFunction)PamEnv_iterkeys,METH_VARARGS|METH_KEYWORDS, 0},
-  {"itervalues",    (PyCFunction)PamEnv_itervalues,METH_VARARGS|METH_KEYWORDS, 0},
-  {"keys",	    (PyCFunction)PamEnv_keys,	METH_VARARGS|METH_KEYWORDS, 0},
-  {"values",	    (PyCFunction)PamEnv_values,	METH_VARARGS|METH_KEYWORDS, 0},
+  {"__contains__",  (PyCFunction)(void(*)(void))PamEnv_has_key,METH_VARARGS|METH_KEYWORDS, 0},
+  {"__getitem__",   (PyCFunction)(void(*)(void))PamEnv_getitem,METH_VARARGS|METH_KEYWORDS, 0},
+  {"get",	    (PyCFunction)(void(*)(void))PamEnv_get,	METH_VARARGS|METH_KEYWORDS, 0},
+  {"has_key",	    (PyCFunction)(void(*)(void))PamEnv_has_key,METH_VARARGS|METH_KEYWORDS, 0},
+  {"items",	    (PyCFunction)(void(*)(void))PamEnv_items,	METH_VARARGS|METH_KEYWORDS, 0},
+  {"iteritems",	    (PyCFunction)(void(*)(void))PamEnv_iteritems,METH_VARARGS|METH_KEYWORDS, 0},
+  {"iterkeys",	    (PyCFunction)(void(*)(void))PamEnv_iterkeys,METH_VARARGS|METH_KEYWORDS, 0},
+  {"itervalues",    (PyCFunction)(void(*)(void))PamEnv_itervalues,METH_VARARGS|METH_KEYWORDS, 0},
+  {"keys",	    (PyCFunction)(void(*)(void))PamEnv_keys,	METH_VARARGS|METH_KEYWORDS, 0},
+  {"values",	    (PyCFunction)(void(*)(void))PamEnv_values,	METH_VARARGS|METH_KEYWORDS, 0},
   {0,0,0,0}        	/* Sentinel */
 };
 
@@ -2029,7 +2029,7 @@ static PyMethodDef PamHandle_Methods[] =
 {
   {
     "conversation",
-    (PyCFunction)PamHandle_conversation,
+    (PyCFunction)(void(*)(void))PamHandle_conversation,
     METH_VARARGS|METH_KEYWORDS,
     MODULE_NAME "." PAMHANDLE_NAME "." "conversation(prompts)\n"
     "  Ask the application to issue the prompts to the user and return the\n"
@@ -2039,7 +2039,7 @@ static PyMethodDef PamHandle_Methods[] =
   },
   {
     "fail_delay",
-    (PyCFunction)PamHandle_fail_delay,
+    (PyCFunction)(void(*)(void))PamHandle_fail_delay,
     METH_VARARGS|METH_KEYWORDS,
     MODULE_NAME "." PAMHANDLE_NAME "." "fail_delay(micro_sec)\n"
     "  Sets the amount of time a failed authenticate attempt should delay for\n"
@@ -2048,7 +2048,7 @@ static PyMethodDef PamHandle_Methods[] =
   },
   {
     "get_user",
-    (PyCFunction)PamHandle_get_user,
+    (PyCFunction)(void(*)(void))PamHandle_get_user,
     METH_VARARGS|METH_KEYWORDS,
     MODULE_NAME "." PAMHANDLE_NAME "." "getuser([prompt])\n"
     "  If " PAMHANDLE_NAME ".user isn't None return it, otherwise ask the\n"
@@ -2057,7 +2057,7 @@ static PyMethodDef PamHandle_Methods[] =
   },
   {
     "strerror",
-    (PyCFunction)PamHandle_strerror,
+    (PyCFunction)(void(*)(void))PamHandle_strerror,
     METH_VARARGS|METH_KEYWORDS,
     MODULE_NAME "." PAMHANDLE_NAME "." "strerror(errnum)\n"
     "  Return a string describing the pam error errnum."
