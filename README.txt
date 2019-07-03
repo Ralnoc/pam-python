@@ -42,6 +42,31 @@ Building and Installing
   To run the test suite, in the directory containing this file run:
     make test
 
+Building and Installing FreeBSD
+-----------------------
+
+  The build dependencies are:
+    - Python2 development system, http://www.python.org
+    - A POSIX system (make, unix shell, sed, etc).
+    - gcc >= 5
+    - The PAM development libraries,
+      http://pam.sourceforge.net
+
+  In addition the unit test requires:
+    - sudo, http://www.sudo.ws/
+    - An account with root privileges.
+
+  To build the re-distributable, in the directory containing
+  this file run:
+    gmake
+
+  To install, in the directory containing this file run:
+    gmake install
+
+  To run the test suite, in the directory containing this file run:
+    gmake test
+  
+  PAM module pam_python.so will be installed in /usr/local/lib/security path
 
 License
 -------
