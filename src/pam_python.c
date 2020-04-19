@@ -2504,7 +2504,7 @@ static int get_pamHandle(
   pamHandle->pamh = pamh;
   pamHandle->py_initialized = do_initialize;
   pamHandle->exception = PyErr_NewException(
-    PAMHANDLE_NAME "." PAMHANDLEEXCEPTION_NAME, PyExc_StandardError, NULL);
+    PAMHANDLE_NAME "." PAMHANDLEEXCEPTION_NAME, PyExc_Exception, NULL);
   if (pamHandle->exception == NULL)
     goto error_exit;
   /*

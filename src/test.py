@@ -181,7 +181,7 @@ def test_constants(results, who, pamh, flags, argv):
   try:
     pamh.PAM_SUCCESS = 1
     results.append("Opps, pamh.PAM_SUCCESS = 1 worked!")
-  except StandardError, e:
+  except Exception as e:
     results.append("except: %s" % e)
   return pamh.PAM_SUCCESS
 
@@ -215,7 +215,7 @@ def test_environment(results, who, pamh, flags, argv):
     try:
       func()
       return str(None)
-    except Exception, e:
+    except Exception as e:
       return e.__class__.__name__ + ": " + str(e)
   #
   # A few things to test here.  First that PamEnv_as_mapping works.
@@ -331,7 +331,7 @@ def test_items(results, who, pamh, flags, argv):
   try:
     setattr(pamh, "tty", 1)
     results.append("%r = %r" % (key, value))
-  except StandardError, e:
+  except Exception as e:
     results.append("except: %s" % e)
   results.append(pamh.get_user("a prompt"))
   return pamh.PAM_SUCCESS
@@ -397,12 +397,12 @@ def test_xauthdata(results, who, pamh, flags, argv):
   try:
     xauthdata2 = pamh.XAuthData(None, "x")
     results.append('pamh.XAuthData(%r, %r)' % (xauthdata2.name, xauthdata2.data))
-  except TypeError, e:
+  except TypeError as e:
     results.append('except: %s' % e)
   try:
     xauthdata2 = pamh.XAuthData("x", 1)
     results.append('pamh.XAuthData(%r, %r)' % (xauthdata2.name, xauthdata2.data))
-  except TypeError, e:
+  except TypeError as e:
     results.append('except: %s' % e)
   class XA: pass
   XA.name = "name-XA"
@@ -521,7 +521,7 @@ def run_pamerr(results):
     results.append(err)
     try:
       pam.authenticate(0)
-    except PAM.error, e:
+    except PAM.error as e:
       results[-1] = -e.args[1]
   del pam
   expected_results = [-r for r in range(PAM._PAM_RETURN_VALUES)]
@@ -559,7 +559,7 @@ def test_exceptions(results, who, pamh, flags, argv):
     try:
       pamh.strerror(debug_magic + err)
       results.append(err)
-    except pamh.exception, e:
+    except pamh.exception as e:
       results.append((-e.pam_result,))
   return pamh.PAM_SUCCESS
 
@@ -601,7 +601,7 @@ def run_absent(results):
     try:
       func(0)
       exception = None
-    except Exception, e:
+    except Exception as e:
       exception = e
     results.append((exception.__class__.__name__, str(exception)))
   del pam
