@@ -1,23 +1,23 @@
-all:	ctest pam_python.so test-pam_python.pam
+all:	ctest build test-pam_python.pam
 
 WARNINGS=-Wall -Wextra -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast -Wsign-compare -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Werror
 #WARNINGS=-Wunreachable-code 	# Gcc 4.1 .. 4.4 are too buggy to make this useful
 
 LIBDIR ?= /lib/security
 
-pam_python.so: pam_python.c setup.py Makefile
+build: pam_python.c setup.py Makefile
 	@rm -f "$@"
-	@[ ! -e build -o build/lib.*/$@ -nt setup.py -a build/lib.*/$@ -nt Makefile ] || rm -r build
+	@[ ! -e build -o build/lib.*/pam_python.so -nt setup.py -a build/lib.*/pam_python.so -nt Makefile ] || rm -r build
 	CFLAGS="$(WARNINGS) -I/usr/local/lib/ " ./setup.py build
 	@#CFLAGS="-O0 $(WARNINGS)" ./setup.py build --debug
 	@#CFLAGS="-O0 $(WARNINGS)" Py_DEBUG=1 ./setup.py build --debug
-	ln -sf build/lib.*/$@ .
+	ln -sf build/lib.*/pam_python.so .
 
 .PHONY: install install-lib
 install: install-lib
 install-lib:
 	mkdir -p $(DESTDIR)$(LIBDIR)
-	cp build/lib.*/pam_python.*.so $(DESTDIR)$(LIBDIR)
+	cp build/lib.*/pam_python.so $(DESTDIR)$(LIBDIR)
 
 .PHONY: clean
 clean:

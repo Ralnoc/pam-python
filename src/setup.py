@@ -1,11 +1,11 @@
 #!/usr/bin/python3 -W default
-import warnings;
-
-warnings.simplefilter('default')
-
+import warnings
 import distutils.sysconfig
 import os
 import sys
+
+
+warnings.simplefilter('default')
 
 try:
     from setuptools import setup, Extension
