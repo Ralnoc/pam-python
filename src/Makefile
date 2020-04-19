@@ -7,7 +7,7 @@ LIBDIR ?= /lib/security
 
 pam_python.so: pam_python.c setup.py Makefile
 	@rm -f "$@"
-	@[ ! -e build -o build/lib.*/pam_python.so -nt setup.py -a build/lib.*/pam_python.so -nt Makefile ] || rm -r build
+	@[ ! -e build -o build/lib.*/$@ -nt setup.py -a build/lib.*/$@ -nt Makefile ] || rm -r build
 	CFLAGS="$(WARNINGS) -I/usr/local/lib/ " ./setup.py build
 	@#CFLAGS="-O0 $(WARNINGS)" ./setup.py build --debug
 	@#CFLAGS="-O0 $(WARNINGS)" Py_DEBUG=1 ./setup.py build --debug
