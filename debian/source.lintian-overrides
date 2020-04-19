@@ -1,0 +1,4 @@
+#
+# The sourceforge qa redirector always fails for us.
+#
+pam-python source: debian-watch-file-should-use-sf-redirector

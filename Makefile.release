@@ -1,5 +1,11 @@
 #
-# Do a release.  Does the following:
+# Do a release.
+#
+# This is file is identical for _all_ sourceforge projects I host.  It is
+# designed to one thing: automate my sourceforce work flow.  Be warned that
+# I will selfishly reject any patches that don't do that.
+#
+# It does the following:
 # 
 # 1.  Verifies the changelogs have been updated to a consistent version.
 #
@@ -18,7 +24,7 @@
 # 7.  Sends the HTML file, and other files references by it, to the web
 #     site.
 #
-# Copyright (c) 2013,2014,2015,2016 Russell Stuart.
+# Copyright (c) 2013,2014,2015,2016,2017,2018,2019 Russell Stuart.
 # Licensed (at your choice) under GPLv2, or any later version,
 # or AGPL-3.0+, or any later version.
 #
@@ -97,7 +103,7 @@ endif
 	#
 	# Insert the debian packates into the release.
 	#
-	DEBIAN_KERNEL_USE_CCACHE="yes" debuild --preserve-env --preserve-envvar="PATH" -k0xE7843A8C -sa --lintian-opts --info --display-info --display-experimental
+	DEBIAN_KERNEL_USE_CCACHE="yes" debuild --preserve-env --preserve-envvar="PATH" -k0xF5231C62E7843A8C -sa --lintian-opts --info --display-info --display-experimental
 	mkdir -p "$(RELEASE_FILES)"
 	rm ../$(RELEASE_PACKAGE_NAME)_$(RELEASE_DEBIAN_VERSION)_*.build
 	set -xve; mv $$(sed -n '1,/^Files:/d;/^$$/q;s:.* :../:p' ../$(RELEASE_PACKAGE_NAME)_$(RELEASE_DEBIAN_VERSION)_*.changes) ../$(RELEASE_PACKAGE_NAME)_$(RELEASE_DEBIAN_VERSION)_*.changes $(RELEASE_FILES)
@@ -141,11 +147,11 @@ endif
 .PHONY: release-customise
 release-customise::
 
-.PHONY: upload
-upload:	upload-htdocs upload-files
+.PHONY: release-upload
+release-upload:	release-upload-htdocs release-upload-files
 
-.PHONY: upload-htdocs
-upload-htdocs: $(RELEASE_DIR)/release.stamp
+.PHONY: release-upload-htdocs
+release-upload-htdocs: $(RELEASE_DIR)/release.stamp
 	#
 	# Send the files that a symlink'ed first, otherwise it fails on the
 	# 1st send.
@@ -153,8 +159,8 @@ upload-htdocs: $(RELEASE_DIR)/release.stamp
 	cd $(RELEASE_DIR); rsync -avPR $$(for f in $$(find htdocs -name index.html -type l); do ff=$$(readlink "$${f}"); echo $${f%/*}/$${ff}; done) rstuart,$(RELEASE_PACKAGE_NAME)@web.sourceforge.net:.
 	rsync -avP --delete $(RELEASE_HTDOCS)/. rstuart,$(RELEASE_PACKAGE_NAME)@web.sourceforge.net:htdocs/.
 
-.PHONY: upload-files
-upload-files: $(RELEASE_DIR)/release.stamp
+.PHONY: release-upload-files
+release-upload-files: $(RELEASE_DIR)/release.stamp
 	rsync -avP --delete $(RELEASE_FILES) rstuart,$(RELEASE_PACKAGE_NAME)@frs.sourceforge.net:/home/frs/project/$(RELEASE_PACKAGE_NAME)/.
 
 .PHONY: release-clean

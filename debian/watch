@@ -1,0 +1,3 @@
+version=3
+
+https://sourceforge.net/projects/pam-python/files/ /projects/pam-python/files/pam-python-(\d[^-]*)[^/]*/

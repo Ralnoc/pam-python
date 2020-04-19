@@ -1,0 +1,88 @@
+#!/usr/bin/make -f
+
+#export DH_VERBOSE=1
+
+DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
+BIN_PACKAGE	= libpam-python
+DOC_PACKAGE	= libpam-python-doc
+DOC_DIR		= usr/share/doc/$(DOC_PACKAGE)
+DEB_BUILD_MAINT_OPTIONS ?= hardening=+bindnow
+
+ME=$(shell sed 's,\([^ ]*\) .*,\1,;q' debian/changelog)
+
+ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
+	CFLAGS += -O0
+endif
+ifneq (,$(findstring debug,$(DEB_BUILD_OPTIONS)))
+	CFLAGS += -g
+endif
+
+.PHONY:	get-orig-source
+get-orig-source:
+	version=$(shell \
+	    wget -O - "http://sourceforge.net/projects/$(ME)/files/" | \
+	    sed -n 's;.*<a href="/projects/$(ME)/files/$(ME)-\([^/]*\)/".*;\1;p' | \
+	    sort --version-sort -r | sed 1q); \
+	wget "http://downloads.sourceforge.net/$(ME)/$(ME)-$${version}/$(ME)-$${version%-*}.tar.gz"; \
+	mv "$(ME)-$${version%-*}.tar.gz" "$(ME)_$${version%-*}.orig.tar.gz"
+
+.PHONY: clean
+clean:
+	dh_testdir
+	$(MAKE) clean
+	dh_clean
+
+.PHONY: build build-arch build-indep
+build: build-arch build-indep
+build-arch:
+	$(shell DEB_BUILD_MAINT_OPTIONS="$(DEB_BUILD_MAINT_OPTIONS)" dpkg-buildflags --export=configure) $(MAKE) lib
+build-indep:
+	$(shell DEB_BUILD_MAINT_OPTIONS="$(DEB_BUILD_MAINT_OPTIONS)" dpkg-buildflags --export=configure) $(MAKE) doc
+
+.PHONY: install install-arch install-indep
+install: install-arch install-indep
+install-arch: build-arch
+	dh_testdir --arch
+	dh_testroot --arch
+	dh_prep --arch
+	dh_installdocs --arch
+	dh_installchangelogs --arch
+	$(MAKE) DESTDIR=$(CURDIR)/debian/$(BIN_PACKAGE) LIBDIR=/lib/$(DEB_HOST_MULTIARCH)/security install-lib
+
+install-indep: build-indep
+	dh_testdir --indep
+	dh_testroot --indep
+	dh_prep --indep
+	dh_installdocs --indep
+	dh_installdocs -p$(DOC_PACKAGE) README.txt
+	dh_installchangelogs --indep
+	$(MAKE) DESTDIR=$(CURDIR)/debian/$(DOC_PACKAGE) DOCDIR=/$(DOC_DIR) install-doc
+	rm $(CURDIR)/debian/$(DOC_PACKAGE)/$(DOC_DIR)/html/_static/jquery.js
+	dh_link -p$(DOC_PACKAGE) /usr/share/javascript/jquery/jquery.js $(DOC_DIR)/html/_static/jquery.js
+	rm $(CURDIR)/debian/$(DOC_PACKAGE)/$(DOC_DIR)/html/_static/underscore.js
+	dh_link -p$(DOC_PACKAGE) /usr/share/javascript/underscore/underscore.js $(DOC_DIR)/html/_static/underscore.js
+	dh_compress --indep -X$(DOC_DIR)/html
+
+.PHONY: binary binary-arch binary-indep
+binary: binary-arch binary-indep
+binary-arch: install-arch
+	dh_testdir --arch
+	dh_testroot --arch
+	dh_link --arch
+	dh_strip --arch
+	dh_compress --arch
+	dh_fixperms --arch
+	dh_installdeb --arch
+	dh_shlibdeps --arch
+	dh_gencontrol --arch
+	dh_md5sums --arch
+	dh_builddeb --arch
+
+binary-indep: install-indep
+	dh_testdir --indep
+	dh_testroot --indep
+	dh_fixperms --indep
+	dh_installdeb --indep
+	dh_gencontrol --indep
+	dh_md5sums --indep
+	dh_builddeb --indep
