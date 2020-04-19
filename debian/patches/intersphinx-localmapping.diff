@@ -1,0 +1,18 @@
+Description: Do not require Internet access during building.
+ intersphinx want to fetch some mapping data, and was set up to use
+ the Internet to find it.  Use a local file from python-doc instead to
+ avoid violating Debian policy 4.9.
+Author: Petter Reinholdtsen <pere@debian.org>
+Bug-Debian: https://bugs.debian.org/830186
+Bug-Debian: https://bugs.debian.org/833411
+Forwarded: no
+Reviewed-By: Petter Reinholdtsen <pere@debian.org>
+Last-Update: 2016-08-26
+
+--- pam-python-1.0.4.orig/doc/conf.py
++++ pam-python-1.0.4/doc/conf.py
+@@ -4,1 +4,3 @@
+-intersphinx_mapping = {'python': ('http://docs.python.org/2.7', None)}
++intersphinx_mapping = {
++  'python': ('/usr/share/doc/python-doc/html', None)
++}

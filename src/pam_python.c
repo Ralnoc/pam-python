@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2012,2014,2016 Russell Stuart
+ * Copyright (c) 2007-2012,2014,2016,2019 Russell Stuart
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -67,6 +67,8 @@
 const char libpam_python_version[]	= "1.0.3";
 const char libpam_python_date[]		= "2014-05-05";
 
+#define	PyCFunctionKwds_cast	(PyCFunction)(Py_ssize_t)
+
 /*
  * Add typedef for Py_ssize_t if it you have an older python.
  */
@@ -85,6 +87,11 @@ static char libpython_so[]	= LIBPYTHON_SO;
 static void initialise_python(void)
 {
 #if	PY_MAJOR_VERSION*100 + PY_MINOR_VERSION >= 204
+  Py_DontWriteBytecodeFlag = 1;
+  Py_IgnoreEnvironmentFlag = 1;
+  /* Py_IsolatedFlag = 1; 		Python3 only */
+  Py_NoSiteFlag = 1;
+  Py_NoUserSiteDirectory = 1;
   Py_InitializeEx(0);
 #else
   size_t		signum;
@@ -317,7 +324,7 @@ static PyMethodDef SyslogFile_Methods[] =
 {
   {
     "write",
-    (PyCFunction)SyslogFile_write,
+    PyCFunctionKwds_cast SyslogFile_write,
     METH_VARARGS|METH_KEYWORDS,
     0
   },
@@ -1349,16 +1356,16 @@ static PyObject* PamEnv_values(
 
 static PyMethodDef PamEnv_Methods[] =
 {
-  {"__contains__",  (PyCFunction)PamEnv_has_key,METH_VARARGS|METH_KEYWORDS, 0},
-  {"__getitem__",   (PyCFunction)PamEnv_getitem,METH_VARARGS|METH_KEYWORDS, 0},
-  {"get",	    (PyCFunction)PamEnv_get,	METH_VARARGS|METH_KEYWORDS, 0},
-  {"has_key",	    (PyCFunction)PamEnv_has_key,METH_VARARGS|METH_KEYWORDS, 0},
-  {"items",	    (PyCFunction)PamEnv_items,	METH_VARARGS|METH_KEYWORDS, 0},
-  {"iteritems",	    (PyCFunction)PamEnv_iteritems,METH_VARARGS|METH_KEYWORDS, 0},
-  {"iterkeys",	    (PyCFunction)PamEnv_iterkeys,METH_VARARGS|METH_KEYWORDS, 0},
-  {"itervalues",    (PyCFunction)PamEnv_itervalues,METH_VARARGS|METH_KEYWORDS, 0},
-  {"keys",	    (PyCFunction)PamEnv_keys,	METH_VARARGS|METH_KEYWORDS, 0},
-  {"values",	    (PyCFunction)PamEnv_values,	METH_VARARGS|METH_KEYWORDS, 0},
+  {"__contains__",  PyCFunctionKwds_cast PamEnv_has_key,METH_VARARGS|METH_KEYWORDS, 0},
+  {"__getitem__",   PyCFunctionKwds_cast PamEnv_getitem,METH_VARARGS|METH_KEYWORDS, 0},
+  {"get",	    PyCFunctionKwds_cast PamEnv_get,	METH_VARARGS|METH_KEYWORDS, 0},
+  {"has_key",	    PyCFunctionKwds_cast PamEnv_has_key,METH_VARARGS|METH_KEYWORDS, 0},
+  {"items",	    PyCFunctionKwds_cast PamEnv_items,	METH_VARARGS|METH_KEYWORDS, 0},
+  {"iteritems",	    PyCFunctionKwds_cast PamEnv_iteritems,METH_VARARGS|METH_KEYWORDS, 0},
+  {"iterkeys",	    PyCFunctionKwds_cast PamEnv_iterkeys,METH_VARARGS|METH_KEYWORDS, 0},
+  {"itervalues",    PyCFunctionKwds_cast PamEnv_itervalues,METH_VARARGS|METH_KEYWORDS, 0},
+  {"keys",	    PyCFunctionKwds_cast PamEnv_keys,	METH_VARARGS|METH_KEYWORDS, 0},
+  {"values",	    PyCFunctionKwds_cast PamEnv_values,	METH_VARARGS|METH_KEYWORDS, 0},
   {0,0,0,0}        	/* Sentinel */
 };
 
@@ -2029,7 +2036,7 @@ static PyMethodDef PamHandle_Methods[] =
 {
   {
     "conversation",
-    (PyCFunction)PamHandle_conversation,
+    PyCFunctionKwds_cast PamHandle_conversation,
     METH_VARARGS|METH_KEYWORDS,
     MODULE_NAME "." PAMHANDLE_NAME "." "conversation(prompts)\n"
     "  Ask the application to issue the prompts to the user and return the\n"
@@ -2039,7 +2046,7 @@ static PyMethodDef PamHandle_Methods[] =
   },
   {
     "fail_delay",
-    (PyCFunction)PamHandle_fail_delay,
+    PyCFunctionKwds_cast PamHandle_fail_delay,
     METH_VARARGS|METH_KEYWORDS,
     MODULE_NAME "." PAMHANDLE_NAME "." "fail_delay(micro_sec)\n"
     "  Sets the amount of time a failed authenticate attempt should delay for\n"
@@ -2048,7 +2055,7 @@ static PyMethodDef PamHandle_Methods[] =
   },
   {
     "get_user",
-    (PyCFunction)PamHandle_get_user,
+    PyCFunctionKwds_cast PamHandle_get_user,
     METH_VARARGS|METH_KEYWORDS,
     MODULE_NAME "." PAMHANDLE_NAME "." "getuser([prompt])\n"
     "  If " PAMHANDLE_NAME ".user isn't None return it, otherwise ask the\n"
@@ -2057,7 +2064,7 @@ static PyMethodDef PamHandle_Methods[] =
   },
   {
     "strerror",
-    (PyCFunction)PamHandle_strerror,
+    PyCFunctionKwds_cast PamHandle_strerror,
     METH_VARARGS|METH_KEYWORDS,
     MODULE_NAME "." PAMHANDLE_NAME "." "strerror(errnum)\n"
     "  Return a string describing the pam error errnum."
@@ -2226,7 +2233,7 @@ static int load_user_module(
     goto error_exit;
   }
   dot = strrchr(user_module_name, '.');
-  if (dot != 0 || strcmp(dot, ".py") == 0)
+  if (dot != 0 && strcmp(dot, ".py") == 0)
     *dot = '\0';
   *user_module = PyModule_New(user_module_name);
   if (*user_module == 0)

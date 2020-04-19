@@ -1,0 +1,9 @@
+Document: pam-python-api
+Title: pam-python API
+Author: Russell Stuart <russell-debian@stuart.id.au>
+Abstract: PAM Python API manual
+Section: Programming
+
+Format: HTML
+Index: /usr/share/doc/libpam-python-doc/html/index.html
+Files: /usr/share/doc/libpam-python-doc/html/*.html

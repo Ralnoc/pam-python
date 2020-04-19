@@ -23,6 +23,7 @@ install-lib:
 clean:
 	rm -rf build ctest pam_python.so test-pam_python.pam test.pyc core
 	[ ! -e /etc/pam.d/test-pam_python.pam ] || { s=$$([ $$(id -u) = 0 ] || echo sudo); $$s rm -f /etc/pam.d/test-pam_python.pam; }
+	[ ! -e /etc/pam.d/test-pam_python-installed.pam ] || { s=$$([ $$(id -u) = 0 ] || echo sudo); $$s rm -f /etc/pam.d/test-pam_python-installed.pam; }
 
 .PHONY: ctest
 ctest:	ctest.c Makefile
@@ -37,5 +38,17 @@ test-pam_python.pam: test-pam_python.pam.in Makefile
 
 .PHONY: test
 test: pam_python.so ctest /etc/pam.d/test-pam_python.pam
+	python test.py
+	./ctest
+
+test-pam_python-installed.pam: test-pam_python.pam.in Makefile
+	sed "s,\\\$$PWD/pam-python.so,pam-python.so,;s,\\\$$PWD,$$(pwd),g" "$@.in" >"$@.tmp" 
+	mv $@.tmp $@
+
+/etc/pam.d/test-pam_python-installed.pam: test-pam_python-installed.pam
+	s=$$([ $$(id -u) = 0 ] || echo sudo); $$s ln -sf $$(pwd)/test-pam_python-installed.pam /etc/pam.d
+
+.PHONY: installed-test
+installed-test: ctest /etc/pam.d/test-pam_python-installed.pam
 	python test.py
 	./ctest

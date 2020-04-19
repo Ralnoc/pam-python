@@ -1,0 +1,19 @@
+syntax: glob
+
+*.orig
+*.py[co]
+MANIFEST
+__pycache__
+build
+debian/*.debhelper
+debian/*.log
+debian/*.substvars
+debian/files
+debian/libpam-python
+debian/libpam-python-doc
+doc/html
+src/*.so
+src/build
+src/ctest
+src/test-pam_python.pam
+release.tmp

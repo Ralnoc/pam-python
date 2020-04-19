@@ -17,6 +17,8 @@ Dependencies
 
   Python >= 2.6, http://www.python.org
   pam >= 0.76, http://pam.sourceforge.net/
+  PyPAM (Debian package python-pam, needed for testing only)
+
 
 
 Building and Installing
@@ -31,6 +33,7 @@ Building and Installing
   In addition the unit test requires:
     - sudo, http://www.sudo.ws/
     - An account with root privileges.
+    - PyPAM (for testing only)
 
   To build the re-distributable, in the directory containing
   this file run:
@@ -46,7 +49,7 @@ Building and Installing
 License
 -------
 
-  Copyright (c) 2007-2014,2016 Russell Stuart.
+  Copyright (c) 2007-2014,2016,2019 Russell Stuart.
 
   This program is free software: you can redistribute it and/or modify it
   under the terms of the GNU Affero General Public License as published by
