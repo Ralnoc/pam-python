@@ -27,7 +27,7 @@ clean:
 
 .PHONY: ctest
 ctest:	ctest.c Makefile
-	gcc -O0 $(WARNINGS) -g -o $@ ctest.c -lpam
+	gcc -O0 $(WARNINGS) -g -o $@ ctest.c -lpam -lpython3.6m
 
 test-pam_python.pam: test-pam_python.pam.in Makefile
 	sed "s,\\\$$PWD,$$(pwd),g" "$@.in" >"$@.tmp" 
