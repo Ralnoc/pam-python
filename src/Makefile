@@ -6,7 +6,7 @@ WARNINGS=-Wall -Wextra -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast -Wsi
 LIBDIR ?= /lib/security
 
 build: pam_python.c setup.py Makefile
-	@[ ! -e build -o build/lib.*/pam_python.so -nt setup.py -a build/lib.*/pam_python.so -nt Makefile ] || rm -r build
+	@[ ! -e build -o build/lib.*/pam_python.*.so -nt setup.py -a build/lib.*/pam_python.so -nt Makefile ] || rm -r build
 	CFLAGS="$(WARNINGS) -I/usr/local/lib/ " ./setup.py build
 	@#CFLAGS="-O0 $(WARNINGS)" ./setup.py build --debug
 	@#CFLAGS="-O0 $(WARNINGS)" Py_DEBUG=1 ./setup.py build --debug
@@ -19,7 +19,7 @@ install-lib:
 
 .PHONY: clean
 clean:
-	rm -rf build ctest pam_python.so test-pam_python.pam test.pyc core
+	rm -rf build ctest test-pam_python.pam test.pyc core
 	[ ! -e /etc/pam.d/test-pam_python.pam ] || { s=$$([ $$(id -u) = 0 ] || echo sudo); $$s rm -f /etc/pam.d/test-pam_python.pam; }
 	[ ! -e /etc/pam.d/test-pam_python-installed.pam ] || { s=$$([ $$(id -u) = 0 ] || echo sudo); $$s rm -f /etc/pam.d/test-pam_python-installed.pam; }
 
