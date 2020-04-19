@@ -63,6 +63,7 @@
 #define	PAMHANDLEEXCEPTION_NAME	"PamException"
 
 #define arr_size(x)	(sizeof(x) / sizeof(*(x)))
+#define PyClass_Check(obj) PyObject_IsInstance(obj, (PyObject *)&PyType_Type)
 
 const char libpam_python_version[]	= "1.0.3";
 const char libpam_python_date[]		= "2014-05-05";
@@ -400,13 +401,13 @@ static int syslog_path_exception(const char* module_path, const char* errormsg)
   {
     name = PyObject_Str(stype);
     if (name != 0)
-      str_name = PyString_AsString(name);
+      str_name = PyUnicode_AsUTF8(name);
   }
   if (pvalue != 0)
   {
     message = PyObject_Str(pvalue);
     if (message != 0)
-      str_message = PyString_AsString(message);
+      str_message = PyUnicode_AsUTF8(message);
   }
   if (errormsg != 0 && str_name != 0 && str_message != 0)
   {
@@ -601,7 +602,7 @@ static PyObject* PamMessage_new(
 
   err = PyArg_ParseTupleAndKeywords(
       args, kwds, "iO!:Message", kwlist,
-      &msg_style, &PyString_Type, &msg);
+      &msg_style, &PyBytes_Type, &msg);
   if (!err)
     goto error_exit;
   pamMessage = (PamMessageObject*)type->tp_alloc(type, 0);
@@ -671,7 +672,7 @@ static PyObject* PamResponse_new(
       &resp, &resp_retcode);
   if (!err)
     goto error_exit;
-  if (resp != Py_None && !PyString_Check(resp))
+  if (resp != Py_None && !PyBytes_Check(resp))
   {
     PyErr_SetString(PyExc_TypeError, "resp must be a string or None");
     goto error_exit;
@@ -776,7 +777,7 @@ static int check_pam_result(PamHandleObject* pamHandle, int pam_result)
     PyErr_SetString(pamHandle->exception, error_string);
     PyErr_Fetch(&ptype, &pvalue, &ptraceback);
     PyErr_NormalizeException(&ptype, &pvalue, &ptraceback);
-    error_code = PyInt_FromLong(pam_result);
+    error_code = PyLong_FromLong(pam_result);
     if (error_code != NULL)
       PyObject_SetAttrString(pvalue, "pam_result", error_code);
     PyErr_Restore(ptype, pvalue, ptraceback);
@@ -799,7 +800,7 @@ static PyObject* PamHandle_get_item(PyObject* self, int item_type)
   if (check_pam_result(pamHandle, pam_result) == -1)
     goto error_exit;
   if (value != 0)
-    result = PyString_FromString(value);
+    result = PyBytes_FromString(value);
   else
   {
     result = Py_None;
@@ -823,7 +824,7 @@ static int PamHandle_set_item(
     value = 0;
   else
   {
-    value = PyString_AsString(pyValue);
+    value = PyUnicode_AsUTF8(pyValue);
     if (value == 0)
     {
       snprintf(
@@ -960,8 +961,8 @@ static PyObject* PamEnvIter_key_entry(const char* entry)
 
   equals = strchr(entry, '=');
   if (equals == 0)
-    return PyString_FromString(entry);
-  return PyString_FromStringAndSize(entry, equals - entry);
+    return PyBytes_FromString(entry);
+  return PyBytes_FromStringAndSize(entry, equals - entry);
 }
 
 /*
@@ -973,8 +974,8 @@ static PyObject* PamEnvIter_value_entry(const char* entry)
 
   equals = strchr(entry, '=');
   if (equals == 0)
-    return PyString_FromString("");
-  return PyString_FromString(equals + 1);
+    return PyBytes_FromString("");
+  return PyBytes_FromString(equals + 1);
 }
 
 /*
@@ -1029,12 +1030,12 @@ static const char* PamEnv_getkey(PyObject* key)
 {
   const char*		result;
 
-  if (!PyString_Check(key))
+  if (!PyBytes_Check(key))
   {
     PyErr_SetString(PyExc_TypeError, "PAM environment key must be a string");
     return 0;
   }
-  result = PyString_AS_STRING(key);
+  result = PyBytes_AS_STRING(key);
   if (*result == '\0')
   {
     PyErr_SetString(
@@ -1086,7 +1087,7 @@ static PyObject* PamEnv_mp_subscript(PyObject* self, PyObject* key)
     PyErr_SetString(PyExc_KeyError, key_str);
     goto error_exit;
   }
-  result = PyString_FromString(value);
+  result = PyBytes_FromString(value);
 
 error_exit:
   return result;
@@ -1110,19 +1111,19 @@ static int PamEnv_mp_assign(PyObject* self, PyObject* key, PyObject* value)
     value_str = (char*)key_str;
   else
   {
-    if (!PyString_Check(value))
+    if (!PyBytes_Check(value))
     {
       PyErr_SetString(
           PyExc_TypeError, "PAM environment value must be a string");
       goto error_exit;
     }
-    value_str = malloc(PyString_Size(key) + 1 + PyString_Size(value) + 1);
+    value_str = malloc(PyBytes_Size(key) + 1 + PyBytes_Size(value) + 1);
     if (value_str == 0)
     {
       PyErr_NoMemory();
       goto error_exit;
     }
-    strcat(strcat(strcpy(value_str, key_str), "="), PyString_AS_STRING(value));
+    strcat(strcat(strcpy(value_str, key_str), "="), PyBytes_AS_STRING(value));
   }
   pam_result = pam_putenv(pamEnv->pamHandle->pamh, value_str);
   if (pam_result != PAM_SUCCESS) // PAM_BAD_ITEM in Linux = PAM_BUF_ERR,PAM_SYSTEM_ERR
@@ -1219,7 +1220,7 @@ static PyObject* PamEnv_get(
     goto error_exit;
   value_str = pam_getenv(pamEnv->pamHandle->pamh, key_str);
   if (value_str != 0)
-    result = PyString_FromString(value_str);
+    result = PyBytes_FromString(value_str);
   else
   {
     result = default_value != 0 ? default_value : Py_None;
@@ -1576,7 +1577,7 @@ static int PamHandle_set_XAUTHDATA(
   name = PyObject_GetAttrString(pyValue, "name");
   if (name == 0)
     goto error_exit;
-  name_str = PyString_AsString(name);
+  name_str = PyUnicode_AsUTF8(name);
   if (name_str == 0)
   {
     PyErr_SetString(PyExc_TypeError, "xauthdata.name must be a string");
@@ -1588,14 +1589,14 @@ static int PamHandle_set_XAUTHDATA(
     PyErr_NoMemory();
     goto error_exit;
   }
-  xauth_data.namelen = PyString_GET_SIZE(name);
+  xauth_data.namelen = PyBytes_GET_SIZE(name);
   /*
    * Get the data.
    */
   data = PyObject_GetAttrString(pyValue, "data");
   if (data == 0)
     goto error_exit;
-  data_str = PyString_AsString(data);
+  data_str = PyUnicode_AsUTF8(data);
   if (data_str == 0)
   {
     PyErr_SetString(PyExc_TypeError, "xauthdata.data must be a string");
@@ -1607,7 +1608,7 @@ static int PamHandle_set_XAUTHDATA(
     PyErr_NoMemory();
     goto error_exit;
   }
-  xauth_data.datalen = PyString_GET_SIZE(data);
+  xauth_data.datalen = PyBytes_GET_SIZE(data);
   /*
    * Set the item.  If that worked PAM will have swallowed the strings inside
    * of it, so we must not free them.
@@ -1769,16 +1770,16 @@ static int PamHandle_conversation_2message(
   msg_style = PyObject_GetAttrString(object, "msg_style");
   if (msg_style == 0)
     goto error_exit;
-  if (!PyInt_Check(msg_style) && !PyLong_Check(msg_style))
+  if (!PyLong_Check(msg_style) && !PyLong_Check(msg_style))
   {
     PyErr_SetString(PyExc_TypeError, "message.msg_style must be an int");
     goto error_exit;
   }
-  message->msg_style = PyInt_AsLong(msg_style);
+  message->msg_style = PyLong_AsLong(msg_style);
   msg = PyObject_GetAttrString(object, "msg");
   if (msg == 0)
     goto error_exit;
-  message->msg = PyString_AsString(msg);
+  message->msg = PyUnicode_AsUTF8(msg);
   if (message->msg == 0)
   {
     PyErr_SetString(PyExc_TypeError, "message.msg must be a string");
@@ -1979,7 +1980,7 @@ static PyObject* PamHandle_get_user(
   if (check_pam_result(pamHandle, pam_result) == -1)
     goto error_exit;
   if (user != 0)
-    result = PyString_FromString(user);
+    result = PyBytes_FromString(user);
   else
   {
     result = Py_None;
@@ -2023,7 +2024,7 @@ static PyObject* PamHandle_strerror(
   }
   else
   {
-    result = PyString_FromString(err);
+    result = PyBytes_FromString(err);
     if (result == 0)
       goto error_exit;
   }
@@ -2317,7 +2318,7 @@ static PyTypeObject* newHeapType(
   PyTypeObject*		result = 0;
   PyTypeObject*		type = 0;
 
-  pyName = PyString_FromString(name);
+  pyName = PyBytes_FromString(name);
   if (pyName == 0)
     goto error_exit;
   type = (PyTypeObject*)PyType_Type.tp_alloc(&PyType_Type, 0);
@@ -2342,7 +2343,7 @@ static PyTypeObject* newHeapType(
   type->tp_methods = methods;
   type->tp_members = members;
   type->tp_getset = getset;
-  type->tp_name = PyString_AsString(pyName);
+  type->tp_name = PyUnicode_AsUTF8(pyName);
 #if PY_VERSION_HEX < 0x02050000
   ((PyHeapTypeObject*)type)->name = pyName;
 #else
@@ -2523,8 +2524,8 @@ static int get_pamHandle(
     pam_result = syslog_path_exception(module_path, "Can't create pamh.env");
     goto error_exit;
   }
-  pamEnv->ob_type->tp_as_mapping = &PamEnv_as_mapping;
-  pamEnv->ob_type->tp_iter = PamEnv_iter;
+  Py_TYPE(pamEnv)->tp_as_mapping = &PamEnv_as_mapping;
+  Py_TYPE(pamEnv)->tp_iter = PamEnv_iter;
   pamEnv->pamHandle = pamHandle;
   pamEnv->pamEnvIter_type = newHeapType(
       pamHandle_module,			/* __module__ */
@@ -2711,10 +2712,10 @@ static int call_python_handler(
     handler_args = Py_BuildValue("(O)", pamHandle);
   else
   {
-    flags_object = PyInt_FromLong(flags);
+    flags_object = PyLong_FromLong(flags);
     if (flags_object == 0)
     {
-      pam_result = syslog_exception(pamHandle, "PyInt_FromLong(flags) failed");
+      pam_result = syslog_exception(pamHandle, "PyLong_FromLong(flags) failed");
       goto error_exit;
     }
     argv_object = PyList_New(argc);
@@ -2725,12 +2726,12 @@ static int call_python_handler(
     }
     for (i = 0; i < argc; i += 1)
     {
-      arg_object = PyString_FromString(argv[i]);
+      arg_object = PyBytes_FromString(argv[i]);
       if (arg_object == 0)
       {
 	pam_result = syslog_exception(
 	    pamHandle,
-	    "PyString_FromString(argv[i]) failed");
+	    "PyBytes_FromString(argv[i]) failed");
 	goto error_exit;
       }
       PyList_SET_ITEM(argv_object, i, arg_object);
@@ -2808,14 +2809,14 @@ static int call_handler(
   /*
    * It must return an integer.
    */
-  if (!PyInt_Check(py_resultobj) && !PyLong_Check(py_resultobj))
+  if (!PyLong_Check(py_resultobj) && !PyLong_Check(py_resultobj))
   {
     pam_result = syslog_message(
 	pamHandle,
 	"%s() did not return an integer.", handler_name);
     goto error_exit;
   }
-  pam_result = PyInt_AsLong(py_resultobj);
+  pam_result = PyLong_AsLong(py_resultobj);
 
 error_exit:
   py_xdecref(handler_function);

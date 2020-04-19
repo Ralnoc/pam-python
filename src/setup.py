@@ -1,4 +1,4 @@
-#!/usr/bin/python -W default
+#!/usr/bin/python3 -W default
 import warnings; warnings.simplefilter('default')
 
 import distutils.sysconfig
@@ -21,11 +21,11 @@ classifiers = [
   "Natural Language :: English",
   "Operating System :: Unix",
   "Programming Language :: C",
-  "Programming Language :: Python",
+  "Programming Language :: Python3",
   "Topic :: Software Development :: Libraries :: Python Modules",
   "Topic :: System :: Systems Administration :: Authentication/Directory"]
 
-if not os.environ.has_key("Py_DEBUG"):
+if "Py_DEBUG" not in os.environ:
   Py_DEBUG = []
 else:
   Py_DEBUG = [('Py_DEBUG',1)]
@@ -37,13 +37,13 @@ ext_modules = [
       sources=["pam_python.c"],
       include_dirs = [],
       library_dirs=[],
-      define_macros=[('LIBPYTHON_SO','"'+libpython_so+'"')] + Py_DEBUG,
-      libraries=["pam","python%d.%d" % sys.version_info[:2]],
+      define_macros=[('LIBPYTHON_SO', '"'+libpython_so+'"')] + Py_DEBUG,
+      libraries=["pam", "python%d.%d" % sys.version_info[:2]],
     ), ]
 
 setup(
   name="pam_python",
-  version="1.0.7",
+  version="1.1.0",
   description="Enabled PAM Modules to be written in Python",
   keywords="pam,embed,authentication,security",
   platforms="Unix",

@@ -1,3 +1,8 @@
+pam-python-1.1.0 Sat, 18 Apr 2020 23:00:00 +1000
+
+  New: Migrated from Python 2 to Python 3
+  New: Updated README.md with new changes
+
 pam-python-1.0.7 Wed, 18 Sep 2019 20:23:54 +1000
 
   Bug: Local root exploit.

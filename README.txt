@@ -15,7 +15,7 @@ pam_python
 Dependencies
 ------------
 
-  Python >= 2.6, http://www.python.org
+  Python >= 3.6, http://www.python.org
   pam >= 0.76, http://pam.sourceforge.net/
   PyPAM (Debian package python-pam, needed for testing only)
 
@@ -25,10 +25,15 @@ Building and Installing
 -----------------------
 
   The build dependencies are:
-    - Python2 development system, http://www.python.org
+    - Python3 development system, http://www.python.org
     - A POSIX system (make, unix shell, sed, etc).
     - The PAM development libraries,
       http://pam.sourceforge.net
+
+  Compiling in Ubuntu 18.04 requires the modules:
+    - build-essential
+    - libpam0g-dev
+    - python3-dev
 
   In addition the unit test requires:
     - sudo, http://www.sudo.ws/
