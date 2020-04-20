@@ -5,7 +5,8 @@ import os
 import sys
 
 from setuptools import setup
-from distutils.core import Extension
+from setuptools import Extension
+# from distutils.core import Extension
 
 
 warnings.simplefilter('default')
