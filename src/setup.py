@@ -38,7 +38,10 @@ ext_modules = [
         "pam_python",
         sources=["pam_python.c"],
         include_dirs=[],
-        library_dirs=[],
+        library_dirs=[
+            '/lib/security',
+            '/usr/local/lib/security'
+        ],
         define_macros=[('LIBPYTHON_SO', '"' + libpython_so + '"')] + Py_DEBUG,
         libraries=["pam", "python%d.%dm" % sys.version_info[:2]],
     ), ]
