@@ -4,10 +4,9 @@ import distutils.sysconfig
 import os
 import sys
 
-try:
-    from setuptools import setup, Extension
-except ImportError:
-    from distutils.core import setup, Extension
+from setuptools import setup
+from distutils.core import Extension
+
 
 warnings.simplefilter('default')
 
