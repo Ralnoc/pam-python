@@ -4,16 +4,12 @@ import distutils.sysconfig
 import os
 import sys
 
+from setuptools import setup, Extension
 
 warnings.simplefilter('default')
 
-try:
-    from setuptools import setup, Extension
-except ImportError:
-    from distutils.core import setup, Extension
-
 long_description = """\
-Embeds the Python interpreter into PAM \
+Embeds the Python 3 interpreter into PAM \
 so PAM modules can be written in Python"""
 
 classifiers = [
@@ -38,13 +34,11 @@ ext_modules = [
         "pam_python",
         sources=["pam_python.c"],
         include_dirs=[],
-        library_dirs=[
-            '/lib/security',
-            '/usr/local/lib/security'
-        ],
+        library_dirs=[],
         define_macros=[('LIBPYTHON_SO', '"' + libpython_so + '"')] + Py_DEBUG,
         libraries=["pam", "python%d.%dm" % sys.version_info[:2]],
-    ), ]
+    ),
+]
 
 setup(
     name="pam_python",
