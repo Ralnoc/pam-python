@@ -33,7 +33,7 @@ ext_modules = [
     Extension(
         "pam_python",
         sources=["pam_python.c"],
-        include_dirs=[],
+        include_dirs=['/usr/local/lib/'],
         library_dirs=[],
         define_macros=[('LIBPYTHON_SO', '"' + libpython_so + '"')] + Py_DEBUG,
         libraries=["pam", "python%d.%dm" % sys.version_info[:2]],
