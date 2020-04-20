@@ -1,3 +1,7 @@
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),FreeBSD)
+        PREFIX ?= /usr/local
+endif
 PREFIX	?= /usr
 DOCDIR	?= $(PREFIX)/share/doc/pam_python
 

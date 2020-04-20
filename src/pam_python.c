@@ -29,7 +29,7 @@
 #define PAM_SM_PASSWORD
 
 #include <security/pam_modules.h>
-#ifndef __APPLE__
+#if !defined(__APPLE__) && !defined(__FreeBSD__)
 #include <security/_pam_macros.h>
 #include <security/_pam_types.h>
 #else
@@ -51,8 +51,10 @@
 #endif
 
 #ifndef	DEFAULT_SECURITY_DIR
-#ifdef __APPLE__
+#if defined(__APPLE__)
 #define DEFAULT_SECURITY_DIR	"/usr/lib/pam/"
+#elif defined(__FreeBSD__)
+#define DEFAULT_SECURITY_DIR    "/usr/lib/"
 #else
 #define	DEFAULT_SECURITY_DIR	"/lib/security/"
 #endif
@@ -1934,7 +1936,7 @@ static PyObject* PamHandle_fail_delay(
 {
   int			err;
   int			micro_sec = 0;
-  int			pam_result;
+  /*int			pam_result; */
   PyObject*		result = 0;
   static char*		kwlist[] = {"micro_sec", NULL};
 
