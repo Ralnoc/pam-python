@@ -15,7 +15,7 @@ build: pam_python.c setup.py Makefile
 install: install-lib
 install-lib:
 	mkdir -p $(DESTDIR)$(LIBDIR)
-    for file in $$(ls -1 build/lib.*/pam_python*.so); do cp $$file $(DESTDIR)$(LIBDIR); done
+    files=$$(ls -1 build/lib.*/pam_python*.so)for file in $$files; do cp $$file $(DESTDIR)$(LIBDIR); done
 
 .PHONY: clean
 clean:
