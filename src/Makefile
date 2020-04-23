@@ -15,7 +15,7 @@ build: pam_python.c setup.py Makefile
 install: install-lib
 install-lib:
 	mkdir -p $(DESTDIR)$(LIBDIR)
-	cp build/lib.*/pam_python.so $(DESTDIR)$(LIBDIR)
+    for file in $$(ls -1 build/lib.*/pam_python*.so); do cp $$file $(DESTDIR)$(LIBDIR); done
 
 .PHONY: clean
 clean:
@@ -28,7 +28,7 @@ ctest:	ctest.c Makefile
 	gcc -O0 $(WARNINGS) -g -o $@ ctest.c -lpam -lpython3.6m
 
 test-pam_python.pam: test-pam_python.pam.in Makefile
-	sed "s,\\\$$PWD,$$(pwd),g" "$@.in" >"$@.tmp" 
+	sed "s,\\\$$PWD,$$(pwd),g" "$@.in" >"$@.tmp"
 	mv $@.tmp $@
 
 /etc/pam.d/test-pam_python.pam: test-pam_python.pam
@@ -40,7 +40,7 @@ test: pam_python.so ctest /etc/pam.d/test-pam_python.pam
 	./ctest
 
 test-pam_python-installed.pam: test-pam_python.pam.in Makefile
-	sed "s,\\\$$PWD/pam-python.so,pam-python.so,;s,\\\$$PWD,$$(pwd),g" "$@.in" >"$@.tmp" 
+	sed "s,\\\$$PWD/pam-python.so,pam-python.so,;s,\\\$$PWD,$$(pwd),g" "$@.in" >"$@.tmp"
 	mv $@.tmp $@
 
 /etc/pam.d/test-pam_python-installed.pam: test-pam_python-installed.pam
