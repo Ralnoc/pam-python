@@ -35,7 +35,7 @@ test-pam_python.pam: test-pam_python.pam.in Makefile
 	s=$$([ $$(id -u) = 0 ] || echo sudo); $$s ln -sf $$(pwd)/test-pam_python.pam /etc/pam.d
 
 .PHONY: test
-test: pam_python.so ctest /etc/pam.d/test-pam_python.pam
+test: build ctest /etc/pam.d/test-pam_python.pam
 	python test.py
 	./ctest
 
