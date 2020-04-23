@@ -7,18 +7,15 @@ LIBDIR ?= /lib/security
 
 build: pam_python.c setup.py Makefile
 	@[ ! -e build -o build/lib.*/pam_python.*.so -nt setup.py -a build/lib.*/pam_python.so -nt Makefile ] || rm -r build
-	CFLAGS="$(WARNINGS) -I/usr/local/lib/ " ./setup.py build
-	PAM_LIBRARY=$$(ls -1 build/lib.*/pam_python*.so*)
-	ln -sf $$PAM_LIBRARY $$(pwd)/pam_python.so
+	CFLAGS="$(WARNINGS) -I/usr/local/lib/ " CC=gcc ./setup.py build
 	@#CFLAGS="-O0 $(WARNINGS)" ./setup.py build --debug
 	@#CFLAGS="-O0 $(WARNINGS)" Py_DEBUG=1 ./setup.py build --debug
 
 .PHONY: install install-lib
 install: install-lib
 install-lib:
-	s=$$([ $$(id -u) = 0 ] || echo sudo); $$s mkdir -p $(DESTDIR)$(LIBDIR)
-	PAM_LIBRARY=$$(ls -1 build/lib.*/pam_python*.so*)
-	s=$$([ $$(id -u) = 0 ] || echo sudo); $$s cp $$PAM_LIBRARY $(DESTDIR)$(LIBDIR)
+	mkdir -p $(DESTDIR)$(LIBDIR)
+	cp build/lib.*/pam_python.so $(DESTDIR)$(LIBDIR)
 
 .PHONY: clean
 clean:
@@ -38,7 +35,7 @@ test-pam_python.pam: test-pam_python.pam.in Makefile
 	s=$$([ $$(id -u) = 0 ] || echo sudo); $$s ln -sf $$(pwd)/test-pam_python.pam /etc/pam.d
 
 .PHONY: test
-test: build ctest /etc/pam.d/test-pam_python.pam
+test: pam_python.so ctest /etc/pam.d/test-pam_python.pam
 	python test.py
 	./ctest
 
