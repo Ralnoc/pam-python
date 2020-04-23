@@ -32,6 +32,8 @@ else:
     Py_DEBUG = [('Py_DEBUG', 1)]
 
 libpython_so = distutils.sysconfig.get_config_var('INSTSONAME')
+
+os.environ["CC"] = "gcc"
 ext_modules = [
     Extension(
         "pam_python",
