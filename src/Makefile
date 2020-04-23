@@ -15,8 +15,8 @@ build: pam_python.c setup.py Makefile
 .PHONY: install install-lib
 install: install-lib
 install-lib:
-	mkdir -p $(DESTDIR)$(LIBDIR)
-	cp build/lib.*/pam_python*.so $(DESTDIR)$(LIBDIR)
+	s=$$([ $$(id -u) = 0 ] || echo sudo); $$s mkdir -p $(DESTDIR)$(LIBDIR)
+	s=$$([ $$(id -u) = 0 ] || echo sudo); $$s cp build/lib.*/pam_python*.so $(DESTDIR)$(LIBDIR)
 
 .PHONY: clean
 clean:
