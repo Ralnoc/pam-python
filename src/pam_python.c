@@ -65,8 +65,8 @@
 #define arr_size(x)	(sizeof(x) / sizeof(*(x)))
 #define PyClass_Check(obj) PyObject_IsInstance(obj, (PyObject *)&PyType_Type)
 
-const char libpam_python_version[]	= "1.0.3";
-const char libpam_python_date[]		= "2014-05-05";
+const char libpam_python_version[]	= "1.0.7";
+const char libpam_python_date[]		= "2020-04-24";
 
 #define	PyCFunctionKwds_cast	(PyCFunction)(Py_ssize_t)
 
@@ -2352,8 +2352,8 @@ static PyTypeObject* newHeapType(
   pyName = 0;
   PyType_Ready(type);
   type->tp_new = new;
-  if (PyDict_SetItemString(type->tp_dict, "__module__", module) == -1)
-    goto error_exit;
+//  if (PyDict_SetItemString(type->tp_dict, "__module__", module) == -1)
+//    goto error_exit;
   result = type;
   type = 0;
 
