@@ -2322,7 +2322,7 @@ static PyTypeObject* newHeapType(
   pyName = PyBytes_FromString(name);
   if (pyName == 0)
     goto error_exit;
-  type = (PyTypeObject*)PyTypeObject.tp_alloc(&PyType_Type, 0);
+  type = (PyObject*)PyType_Type.tp_alloc(PyTypeObject, 0);
   if (type == 0)
     goto error_exit;
   type->tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HEAPTYPE|Py_TPFLAGS_HAVE_GC;
