@@ -29,17 +29,15 @@ classifiers = [
 _DEBUG_LEVEL = 0
 
 extra_compile_args = sysconfig.get_config_var('CFLAGS').split()
-extra_compile_args += ["-Wall", "-Wextra"]
 if "Py_DEBUG" not in os.environ:
     Py_DEBUG = []
-    extra_compile_args += ["-g3", "-O0", "-DDEBUG=%s" % _DEBUG_LEVEL, "-UNDEBUG"]
+    extra_compile_args += ["-g3"]
 else:
     Py_DEBUG = [('Py_DEBUG', 1)]
-    extra_compile_args += ["-DNDEBUG", "-O3"]
+    extra_compile_args += []
 
 libpython_so = distutils.sysconfig.get_config_var('INSTSONAME')
 
-os.environ["CC"] = "gcc"
 ext_modules = [
     Extension(
         "pam_python",
