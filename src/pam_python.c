@@ -2354,7 +2354,7 @@ static PyTypeObject* newHeapType(
   pyName = 0;
   PyType_Ready(type);
   type->tp_new = new;
-  if (!PyType_Ready(type->tp_dict))
+  if (!PyType_Ready(type))
     goto error_exit;
   if (PyDict_SetItemString(type->tp_dict, "__module__", module) == -1)
     goto error_exit;
