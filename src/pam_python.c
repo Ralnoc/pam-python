@@ -2354,7 +2354,7 @@ static PyTypeObject* newHeapType(
   pyName = 0;
   PyType_Ready(type);
   type->tp_new = new;
-  if (!PyType_Ready(type))
+  if (PyType_Ready(type) == 0)
     goto error_exit;
   if (PyDict_SetItemString(type->tp_dict, "__module__", module) == -1)
     goto error_exit;
@@ -2362,8 +2362,8 @@ static PyTypeObject* newHeapType(
   type = 0;
 
 error_exit:
-  py_xdecref(pyName);
-  py_xdecref((PyObject*)type);
+  Py_XDECREF(pyName);
+  Py_XDECREF((PyObject*)type);
   return result;
 }
 
