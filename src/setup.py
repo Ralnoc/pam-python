@@ -29,7 +29,7 @@ classifiers = [
 _DEBUG_LEVEL = 0
 
 extra_compile_args = sysconfig.get_config_var('CFLAGS').split()
-extra_compile_args += ["-std=c++11", "-Wall", "-Wextra"]
+extra_compile_args += ["-std=gcc", "-Wall", "-Wextra"]
 if "Py_DEBUG" not in os.environ:
     Py_DEBUG = []
     extra_compile_args += ["-g3", "-O0", "-DDEBUG=%s" % _DEBUG_LEVEL, "-UNDEBUG"]
