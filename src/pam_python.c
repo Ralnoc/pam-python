@@ -2391,12 +2391,14 @@ static PyObject* newSingletonObject(
 //    result = type->tp_alloc(type, 0);
 //  py_xdecref((PyObject*)type);
 //  return result;
-  PyTypeObject *self
+  PyObject *self
+  PyTypeObject *type
 
   type = newHeapType(
         module, name, basicsize, doc, clear, methods, members, getset, 0);
 
   self = type->tp_alloc(type, 0);
+  type->tp_dict = PyDict_New();
 
   py_xdecref((PyObject*)type);
   return self;
