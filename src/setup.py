@@ -28,13 +28,13 @@ classifiers = [
     "Topic :: System :: Systems Administration :: Authentication/Directory"]
 _DEBUG_LEVEL = 0
 
-extra_compile_args = sysconfig.get_config_var('CFLAGS').split()
+# extra_compile_args = sysconfig.get_config_var('CFLAGS').split()
 if "Py_DEBUG" not in os.environ:
     Py_DEBUG = []
-    extra_compile_args += ["-g3"]
+    extra_compile_args = ["-g"]
 else:
     Py_DEBUG = [('Py_DEBUG', 1)]
-    extra_compile_args += []
+    extra_compile_args = []
 
 libpython_so = distutils.sysconfig.get_config_var('INSTSONAME')
 
