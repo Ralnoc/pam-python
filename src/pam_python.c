@@ -2323,7 +2323,6 @@ static PyTypeObject* newHeapType(
   if (pyName == 0)
     goto error_exit;
   type = (PyTypeObject*)PyType_Type.tp_alloc(&PyType_Type, 0);
-  type->tp_dict = PyDict_New();
   if (type == 0)
     goto error_exit;
   type->tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HEAPTYPE|Py_TPFLAGS_HAVE_GC;
@@ -2382,26 +2381,26 @@ static PyObject* newSingletonObject(
   struct PyGetSetDef*	getset		/* tp_getset (optional) */
 )
 {
-//  PyObject*		result = 0;
-//  PyTypeObject*  	type = 0;
-//
-//  type = newHeapType(
-//      module, name, basicsize, doc, clear, methods, members, getset, 0);
-//
-//  if (type != 0)
-//    result = type->tp_alloc(type, 0);
-//  py_xdecref((PyObject*)type);
-//  return result;
-  PyObject *self;
-  PyTypeObject *type;
+  PyObject*		result = 0;
+  PyTypeObject*  	type = 0;
 
   type = newHeapType(
-        module, name, basicsize, doc, clear, methods, members, getset, 0);
+      module, name, basicsize, doc, clear, methods, members, getset, 0);
 
-  self = (PyObject *)type->tp_alloc(type, 0);
-
+  if (type != 0)
+    result = type->tp_alloc(type, 0);
   py_xdecref((PyObject*)type);
-  return self;
+  return result;
+//  PyObject *self;
+//  PyTypeObject *type;
+//
+//  type = newHeapType(
+//        module, name, basicsize, doc, clear, methods, members, getset, 0);
+//
+//  self = (PyObject *)type->tp_alloc(type, 0);
+//
+//  py_xdecref((PyObject*)type);
+//  return self;
 }
 
 /*
