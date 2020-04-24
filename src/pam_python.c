@@ -2353,6 +2353,8 @@ static PyTypeObject* newHeapType(
   pyName = 0;
   PyType_Ready(type);
   type->tp_new = new;
+  if (type->tp_dict == 0)
+      goto error_exit;
   if (PyDict_SetItemString(type->tp_dict, "__module__", module) == -1)
     goto error_exit;
   result = type;
