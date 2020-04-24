@@ -42,6 +42,7 @@ ext_modules = [
         library_dirs=[],
         define_macros=[('LIBPYTHON_SO', '"' + libpython_so + '"')] + Py_DEBUG,
         libraries=["pam", "python%d.%dm" % sys.version_info[:2]],
+        extra_compile_args=["-g"],
     ),
 ]
 
