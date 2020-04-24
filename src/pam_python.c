@@ -91,6 +91,7 @@ static void initialise_python(void)
   Py_DontWriteBytecodeFlag = 1;
   Py_IgnoreEnvironmentFlag = 1;
   /* Py_IsolatedFlag = 1; 		Python3 only */
+  Py_IsolatedFlag = 1;
   Py_NoSiteFlag = 1;
   Py_NoUserSiteDirectory = 1;
   Py_InitializeEx(0);
@@ -2352,8 +2353,8 @@ static PyTypeObject* newHeapType(
   pyName = 0;
   PyType_Ready(type);
   type->tp_new = new;
-//  if (PyDict_SetItemString(type->tp_dict, "__module__", module) == -1)
-//    goto error_exit;
+  if (PyDict_SetItemString(type->tp_dict, "__module__", module) == -1)
+    goto error_exit;
   result = type;
   type = 0;
 
