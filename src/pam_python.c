@@ -2391,8 +2391,8 @@ static PyObject* newSingletonObject(
 //    result = type->tp_alloc(type, 0);
 //  py_xdecref((PyObject*)type);
 //  return result;
-  PyObject *self
-  PyTypeObject *type
+  PyObject *self;
+  PyTypeObject *type;
 
   type = newHeapType(
         module, name, basicsize, doc, clear, methods, members, getset, 0);
