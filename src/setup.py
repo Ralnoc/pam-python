@@ -3,6 +3,7 @@ import warnings
 import distutils.sysconfig
 import os
 import sys
+import sysconfig
 
 from setuptools import setup
 from setuptools import Extension
@@ -25,11 +26,16 @@ classifiers = [
     "Programming Language :: Python3",
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: System :: Systems Administration :: Authentication/Directory"]
+_DEBUG_LEVEL = 0
 
+extra_compile_args = sysconfig.get_config_var('CFLAGS').split()
+extra_compile_args += ["-std=c++11", "-Wall", "-Wextra"]
 if "Py_DEBUG" not in os.environ:
     Py_DEBUG = []
+    extra_compile_args += ["-g3", "-O0", "-DDEBUG=%s" % _DEBUG_LEVEL, "-UNDEBUG"]
 else:
     Py_DEBUG = [('Py_DEBUG', 1)]
+    extra_compile_args += ["-DNDEBUG", "-O3"]
 
 libpython_so = distutils.sysconfig.get_config_var('INSTSONAME')
 
@@ -42,7 +48,7 @@ ext_modules = [
         library_dirs=[],
         define_macros=[('LIBPYTHON_SO', '"' + libpython_so + '"')] + Py_DEBUG,
         libraries=["pam", "python%d.%dm" % sys.version_info[:2]],
-        extra_compile_args=["-g"],
+        extra_compile_args=extra_compile_args,
     ),
 ]
 
